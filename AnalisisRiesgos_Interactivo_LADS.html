@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Riesgos: Exportación de Pigmentos de Papa Nativa a Canadá</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Earthy Harmony -->
+    <!-- Application Structure Plan: The application is designed as an interactive dashboard. It begins with a high-level summary and key metrics. The core is a thematic navigation system (Geopolítico, Comercial, Financiero) that filters a dynamic list of risk cards. This structure allows users to either get a quick overview or dive deep into specific risk categories based on their interests. It's more intuitive and user-driven than a static report, guiding exploration from broad themes to specific details and mitigation strategies, supported by contextual charts. -->
+    <!-- Visualization & Content Choices: 
+        - Risk Categories (Buttons): Goal: Organize/Navigate. Method: Interactive HTML buttons. Interaction: Click to filter risk cards. Justification: Provides a clear, high-level entry point into the main risk themes.
+        - Risk Detail Cards: Goal: Inform. Method: Dynamically generated HTML/Tailwind cards. Interaction: Displays detailed risk info, impact, probability, and mitigation. Justification: Presents complex information in a structured, digestible format.
+        - Risk Profile (Doughnut Chart): Goal: Proportions/Inform. Method: Chart.js Canvas. Interaction: Hover tooltips. Justification: Gives a quick visual summary of the overall risk distribution (Low, Medium, High). Library: Chart.js.
+        - Trade Context (Bar Chart): Goal: Compare/Context. Method: Chart.js Canvas. Interaction: Hover tooltips. Justification: Provides macroeconomic context to the specific export venture. Library: Chart.js.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #FDFBF8;
+            color: #4F4A45;
+        }
+        .main-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+        .card {
+            background-color: #FFFFFF;
+            border: 1px solid #EAE6E2;
+            border-radius: 0.75rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -4px rgba(0, 0, 0, 0.07);
+        }
+        .nav-btn {
+            transition: all 0.2s ease-in-out;
+            border-bottom: 3px solid transparent;
+        }
+        .nav-btn.active {
+            border-bottom-color: #8A6E5A;
+            color: #4F4A45;
+            font-weight: 600;
+        }
+        .nav-btn:not(.active) {
+            color: #928A83;
+        }
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .tag-high { background-color: #F8D7DA; color: #721C24; }
+        .tag-medium { background-color: #FFF3CD; color: #856404; }
+        .tag-low { background-color: #D4EDDA; color: #155724; }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 300px;
+            max-height: 400px;
+        }
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-bold text-[#4F4A45] mb-2">Análisis de Riesgos de Exportación</h1>
+            <p class="text-lg md:text-xl text-[#8A6E5A]">Pigmentos de Papa Nativa de Colombia a Canadá</p>
+        </header>
+
+        <main>
+            <section id="summary" class="mb-12">
+                <div class="card p-6 md:p-8">
+                    <h2 class="text-2xl font-bold mb-4">Resumen Ejecutivo del Análisis</h2>
+                    <p class="text-base text-gray-700 leading-relaxed">
+                        La exportación de pigmentos naturales extraídos de papas nativas colombianas a Canadá presenta una oportunidad de mercado valiosa, impulsada por la creciente demanda de ingredientes naturales en las industrias alimentaria y cosmética. Sin embargo, el éxito de esta iniciativa depende de una gestión proactiva de los riesgos identificados. Este panel interactivo desglosa los desafíos clave en tres áreas: <span class="font-semibold text-[#8A6E5A]">Geopolítica, Comercial y Financiera</span>. La estabilidad del Tratado de Libre Comercio (TLC) entre Colombia y Canadá es un pilar fundamental, pero la volatilidad de la cadena de suministro, las fluctuaciones cambiarias y el cumplimiento de las normativas canadienses son factores críticos que requieren atención estratégica para asegurar la viabilidad y rentabilidad del proyecto.
+                    </p>
+                </div>
+            </section>
+
+            <section id="dashboard" class="mb-12">
+                <h2 class="text-3xl font-bold text-center mb-8">Panel de Riesgos Interactivos</h2>
+                <div class="flex justify-center border-b border-gray-200 mb-8">
+                    <nav class="flex space-x-4 md:space-x-8 -mb-px">
+                        <button id="btn-all" class="nav-btn py-4 px-1 text-lg active">Todos</button>
+                        <button id="btn-geopolitico" class="nav-btn py-4 px-1 text-lg">Geopolíticos</button>
+                        <button id="btn-comercial" class="nav-btn py-4 px-1 text-lg">Comerciales</button>
+                        <button id="btn-financiero" class="nav-btn py-4 px-1 text-lg">Financieros</button>
+                    </nav>
+                </div>
+
+                <div id="risk-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            </section>
+            
+            <section id="visualizations" class="mb-12">
+                <h2 class="text-3xl font-bold text-center mb-8">Visualizaciones Clave</h2>
+                 <p class="text-center text-gray-600 max-w-3xl mx-auto mb-10">
+                    Los gráficos a continuación ofrecen una perspectiva cuantitativa de los riesgos y el contexto comercial. El primer gráfico distribuye los riesgos identificados por su nivel de severidad general, mientras que el segundo muestra la balanza comercial histórica entre Colombia y Canadá para contextualizar la relación económica bilateral.
+                </p>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold text-center mb-4">Perfil General de Riesgo</h3>
+                        <div class="chart-container">
+                            <canvas id="riskProfileChart"></canvas>
+                        </div>
+                    </div>
+                    <div class="card p-6">
+                        <h3 class="text-xl font-semibold text-center mb-4">Contexto Comercial Colombia-Canadá (USD Millones)</h3>
+                         <div class="chart-container">
+                            <canvas id="tradeBalanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="text-center pt-8 mt-12 border-t border-gray-200">
+            <p class="text-sm text-gray-500">&copy; 2025 Análisis Estratégico de Exportaciones. Todos los derechos reservados.</p>
+            <p class="text-xs text-gray-400 mt-1">Este es un documento de análisis simulado para fines demostrativos.</p>
+        </footer>
+    </div>
+
+    <script>
+        const riskData = [
+            {
+                id: 1,
+                title: "Inestabilidad Política en Colombia",
+                category: "geopolitico",
+                description: "Cambios en políticas agrarias o de exportación debido a la inestabilidad política interna podrían afectar la producción y los costos.",
+                impact: "Medio",
+                probability: "Baja",
+                mitigation: "Diversificar las zonas de cultivo y mantenerse informado sobre el clima político a través de gremios y cámaras de comercio."
+            },
+            {
+                id: 2,
+                title: "Cambios en el TLC Colombia-Canadá",
+                category: "geopolitico",
+                description: "Una renegociación o alteración del Tratado de Libre Comercio podría introducir aranceles o barreras no arancelarias.",
+                impact: "Alto",
+                probability: "Baja",
+                mitigation: "Participar activamente en mesas de trabajo sectoriales y gubernamentales para defender los intereses del sector."
+            },
+            {
+                id: 3,
+                title: "Disrupciones en la Cadena Logística Global",
+                category: "geopolitico",
+                description: "Eventos globales (pandemias, conflictos) pueden afectar las rutas marítimas, aumentando costos y tiempos de entrega.",
+                impact: "Medio",
+                probability: "Media",
+                mitigation: "Contratar seguros de carga, trabajar con operadores logísticos robustos y considerar rutas alternativas."
+            },
+            {
+                id: 4,
+                title: "Competencia de Otros Mercados",
+                category: "comercial",
+                description: "Productores de pigmentos naturales en otras regiones (ej. Perú, China) podrían ofrecer precios más competitivos.",
+                impact: "Alto",
+                probability: "Alta",
+                mitigation: "Diferenciar el producto con certificaciones de origen, comercio justo, y calidad superior. Enfocarse en nichos de mercado."
+            },
+            {
+                id: 5,
+                title: "Normativas y Certificaciones Canadienses",
+                category: "comercial",
+                description: "El incumplimiento de los estrictos estándares de la Agencia Canadiense de Inspección de Alimentos (CFIA) puede resultar en el rechazo de la mercancía.",
+                impact: "Alto",
+                probability: "Media",
+                mitigation: "Invertir en certificaciones (HACCP, GMP) y realizar análisis de laboratorio previos al envío para garantizar el cumplimiento."
+            },
+            {
+                id: 6,
+                title: "Aceptación del Producto en Canadá",
+                category: "comercial",
+                description: "La demanda del consumidor canadiense por este tipo específico de pigmento puede ser menor a la esperada o requerir una fuerte inversión en marketing.",
+                impact: "Medio",
+                probability: "Media",
+                mitigation: "Realizar estudios de mercado, participar en ferias comerciales en Canadá y enviar muestras a potenciales clientes para validación."
+            },
+             {
+                id: 7,
+                title: "Volatilidad Cambiaria (COP/CAD)",
+                category: "financiero",
+                description: "Una devaluación del dólar canadiense (CAD) frente al peso colombiano (COP) reduciría la rentabilidad de las exportaciones.",
+                impact: "Alto",
+                probability: "Alta",
+                mitigation: "Utilizar instrumentos de cobertura cambiaria (forwards, opciones) y negociar contratos en dólares estadounidenses (USD) como moneda intermedia."
+            },
+            {
+                id: 8,
+                title: "Costos de Producción y Transporte",
+                category: "financiero",
+                description: "El aumento en el costo de insumos agrícolas, mano de obra y fletes puede erosionar los márgenes de ganancia.",
+                impact: "Medio",
+                probability: "Alta",
+                mitigation: "Optimizar procesos productivos para mejorar la eficiencia, negociar contratos a largo plazo con proveedores y transportistas."
+            },
+            {
+                id: 9,
+                title: "Acceso a Financiación para Exportadores",
+                category: "financiero",
+                description: "La falta de capital de trabajo puede limitar la capacidad de escalar la producción para cumplir con grandes pedidos internacionales.",
+                impact: "Medio",
+                probability: "Media",
+                mitigation: "Explorar líneas de crédito para exportadores ofrecidas por bancos de desarrollo (ej. Bancóldex) y la banca comercial."
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const container = document.getElementById('risk-cards-container');
+            const navButtons = {
+                all: document.getElementById('btn-all'),
+                geopolitico: document.getElementById('btn-geopolitico'),
+                comercial: document.getElementById('btn-comercial'),
+                financiero: document.getElementById('btn-financiero')
+            };
+            let currentFilter = 'all';
+
+            const impactColors = {
+                'Bajo': 'tag-low',
+                'Medio': 'tag-medium',
+                'Alto': 'tag-high'
+            };
+
+            const probabilityColors = {
+                'Baja': 'tag-low',
+                'Media': 'tag-medium',
+                'Alta': 'tag-high'
+            };
+            
+            function createRiskCard(risk) {
+                return `
+                    <div class="card p-6 flex flex-col">
+                        <h3 class="text-xl font-bold mb-3">${risk.title}</h3>
+                        <div class="flex items-center space-x-2 mb-4 text-xs">
+                            <span class="tag ${impactColors[risk.impact]}">Impacto: ${risk.impact}</span>
+                            <span class="tag ${probabilityColors[risk.probability]}">Probabilidad: ${risk.probability}</span>
+                        </div>
+                        <p class="text-gray-600 text-sm mb-4 flex-grow">${risk.description}</p>
+                        <div>
+                            <p class="text-sm font-semibold text-[#8A6E5A]">Estrategia de Mitigación:</p>
+                            <p class="text-gray-600 text-sm">${risk.mitigation}</p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            function renderCards(filter = 'all') {
+                container.innerHTML = '';
+                const filteredData = (filter === 'all') ? riskData : riskData.filter(r => r.category === filter);
+                filteredData.forEach(risk => {
+                    container.innerHTML += createRiskCard(risk);
+                });
+            }
+
+            function setActiveButton(filter) {
+                Object.values(navButtons).forEach(btn => btn.classList.remove('active'));
+                navButtons[filter].classList.add('active');
+            }
+
+            Object.entries(navButtons).forEach(([key, btn]) => {
+                btn.addEventListener('click', () => {
+                    currentFilter = key;
+                    setActiveButton(key);
+                    renderCards(key);
+                });
+            });
+
+            function initializeCharts() {
+                const riskCounts = riskData.reduce((acc, risk) => {
+                    const severity = risk.impact === 'Alto' || risk.probability === 'Alta' ? 'Alto' : (risk.impact === 'Medio' || risk.probability === 'Media' ? 'Medio' : 'Bajo');
+                    acc[severity] = (acc[severity] || 0) + 1;
+                    return acc;
+                }, { Alto: 0, Medio: 0, Bajo: 0 });
+
+                new Chart(document.getElementById('riskProfileChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Riesgo Alto', 'Riesgo Medio', 'Riesgo Bajo'],
+                        datasets: [{
+                            data: [riskCounts.Alto, riskCounts.Medio, riskCounts.Bajo],
+                            backgroundColor: ['#D98880', '#F5B041', '#82E0AA'],
+                            borderColor: '#FDFBF8',
+                            borderWidth: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += context.parsed;
+                                        }
+                                        return label + ' riesgos';
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+
+                new Chart(document.getElementById('tradeBalanceChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: ['2021', '2022', '2023', '2024 (Est.)'],
+                        datasets: [
+                            {
+                                label: 'Exportaciones de Colombia a Canadá',
+                                data: [1100, 1350, 1400, 1450],
+                                backgroundColor: '#6C5B7B',
+                                borderRadius: 4,
+                            },
+                            {
+                                label: 'Importaciones de Colombia desde Canadá',
+                                data: [850, 920, 1100, 1050],
+                                backgroundColor: '#C0A9BD',
+                                borderRadius: 4,
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: { display: true, text: 'Valor (USD Millones)' }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            }
+                        }
+                    }
+                });
+            }
+
+            renderCards();
+            initializeCharts();
+        });
+    </script>
+</body>
+</html>
